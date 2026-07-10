@@ -394,7 +394,7 @@ def main():
         print(f"补空行: 数据行{insert_pos-1}与备注之间补 {need} 行，间距≥2")
 
     # 9. 调整列宽（与原表一致）、冻结表头，保存
-    col_widths = {'A':13,'B':22.5,'C':14.8,'D':60,'E':16.4,'F':16.4,'G':15.9,'H':13.9,'I':24.3,'J':13,'K':14.8,'L':12,'M':41.8,'N':60}
+    col_widths = {'A':13,'B':23,'C':15,'D':60,'E':16,'F':16,'G':16,'H':14,'I':24,'J':13,'K':15,'L':12,'M':42,'N':60}
     for col_letter, width in col_widths.items():
         ws.column_dimensions[col_letter].width = width
     ws.freeze_panes = 'A2'
