@@ -104,6 +104,7 @@ def calc_g(hours, prev_date, remaining):
 def copy_style(src, dst):
     if src.has_style:
         dst.font = copy(src.font)
+        dst.font.color = None
         dst.border = copy(src.border)
         dst.alignment = copy(src.alignment)
 
