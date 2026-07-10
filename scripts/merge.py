@@ -275,8 +275,12 @@ def main():
         if c_val is not None and str(c_val).strip().isdigit():
             last_data_row = row
 
-    insert_pos = last_data_row + 1
-    ref_row = last_data_row
+    if last_data_row == 0:
+        insert_pos = 2  # 空模板从第2行开始
+        ref_row = 1     # 用表头做样式参考
+    else:
+        insert_pos = last_data_row + 1
+        ref_row = last_data_row
     print(f"最后数据行: {last_data_row}, 插入起始行: {insert_pos}")
 
     # 6. 获取最大序号
