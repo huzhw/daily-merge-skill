@@ -21,11 +21,17 @@
 
 ## 使用
 
+**每月第一天：**
 ```bash
-python scripts/merge.py
+python scripts/new_month.py
 ```
 
-或在 AI 编码助手里说「合并日报」触发。
+**其他日期：**
+```bash
+python scripts/daily.py
+```
+
+或在 AI 编码助手里说「合并日报」自动判断执行。
 
 ## 依赖
 
@@ -37,10 +43,13 @@ pip install openpyxl
 
 ```
 daily-merge/
-├── SKILL.md          ← 技能指令
-├── README.md         ← 本文档
+├── SKILL.md           ← 技能指令
+├── README.md          ← 本文档
+├── templates/
+│   └── 日报模板.xlsx   ← 月初用模板
 └── scripts/
-    └── merge.py      ← 合并脚本
+    ├── new_month.py   ← 月初：模板起新表
+    └── daily.py       ← 每日：昨日追加
 ```
 
 ## 列映射
