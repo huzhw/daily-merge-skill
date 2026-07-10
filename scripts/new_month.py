@@ -59,10 +59,11 @@ def calc_g(hours, prev_date, remaining):
     return d, total
 
 def copy_style(src, dst):
-    """复制边框和字号，不复制底色和字体颜色"""
+    """复制字号字体但不复制颜色（表头是白色）"""
     if src.has_style:
-        dst.font = copy(src.font)
-        dst.font.color = None  # 去掉表头白色
+        from openpyxl.styles import Font
+        sf = src.font
+        dst.font = Font(name=sf.name, size=sf.size, bold=sf.bold, italic=sf.italic)
         dst.border = copy(src.border)
         dst.alignment = copy(src.alignment)
 

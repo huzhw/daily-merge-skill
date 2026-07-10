@@ -103,8 +103,10 @@ def calc_g(hours, prev_date, remaining):
 
 def copy_style(src, dst):
     if src.has_style:
-        dst.font = copy(src.font)
-        dst.font.color = None
+        # 复制字号字体但不复制颜色（表头是白色）
+        from openpyxl.styles import Font
+        sf = src.font
+        dst.font = Font(name=sf.name, size=sf.size, bold=sf.bold, italic=sf.italic)
         dst.border = copy(src.border)
         dst.alignment = copy(src.alignment)
 
