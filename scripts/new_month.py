@@ -40,7 +40,7 @@ def main():
     # 样式（完全参照原文件）
     hfont = Font(name='Microsoft YaHei', size=11, bold=True, color='FFFFFF')
     hfill = PatternFill(start_color='1450B8', end_color='1450B8', fill_type='solid')
-    halign = Alignment(horizontal='center', vertical='center')
+    halign = Alignment(horizontal='center', vertical='center', wrap_text=True)
     dfont = Font(name='Microsoft YaHei', size=11)
     dalign = Alignment(horizontal='center', vertical='center')
     bthin = Border(left=Side('thin'), right=Side('thin'), top=Side('thin'), bottom=Side('thin'))
