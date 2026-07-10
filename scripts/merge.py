@@ -175,11 +175,10 @@ def calc_g_column(hours, prev_date, remaining):
     return result_date, total  # 返回日期和当天剩余小时
 
 def copy_style(src_cell, dst_cell):
-    """复制单元格样式"""
+    """复制单元格样式（不复制底色，避免表头蓝底污染数据行）"""
     if src_cell.has_style:
         dst_cell.font = copy(src_cell.font)
         dst_cell.border = copy(src_cell.border)
-        dst_cell.fill = copy(src_cell.fill)
         dst_cell.alignment = copy(src_cell.alignment)
 
 def remove_today_rows(ws, today_date):
