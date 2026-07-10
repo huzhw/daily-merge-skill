@@ -55,6 +55,10 @@ def main():
         print(f'Row{row}: {dn} #{seq} G={gd2.strftime("%m-%d")}')
         row+=1
 
+    if len(ts)>1:
+        from openpyxl.styles import Alignment
+        ws.merge_cells(start_row=2,start_column=1,end_row=row-1,end_column=1)
+        for r in range(2,row): ws.cell(row=r,column=1).alignment=Alignment(horizontal='center',vertical='center')
     ws.freeze_panes='A2'
     cw={'A':13,'B':23,'C':15,'D':60,'E':16,'F':16,'G':16,'H':14,'I':24,'J':13,'K':15,'L':12,'M':42,'N':60}
     for k,v in cw.items(): ws.column_dimensions[k].width=v
