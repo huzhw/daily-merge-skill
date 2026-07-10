@@ -44,7 +44,7 @@ def main():
     dfont = Font(name='Microsoft YaHei', size=11)
     dalign = Alignment(horizontal='center', vertical='center')
     bthin = Border(left=Side('thin'), right=Side('thin'), top=Side('thin'), bottom=Side('thin'))
-    bnotop = Border(left=Side('thin'), right=Side('thin'), top=Side('thin'))  # 数据行无下边框
+    bdata = Border(left=Side('thin'), right=Side('thin'), top=Side('thin'), bottom=Side('thin'))
 
     # 表头
     hd = ['*日期', '*项目名称', '*序号\n（全局唯一）', '*任务描述', '*完成百分比',
@@ -77,37 +77,37 @@ def main():
     for t in ts:
         # A
         ws.cell(row=row, column=1, value=TODAY).number_format = 'yyyy/m/d;@'
-        ws.cell(row=row, column=1).font = dfont; ws.cell(row=row, column=1).alignment = dalign; ws.cell(row=row, column=1).border = bnotop
+        ws.cell(row=row, column=1).font = dfont; ws.cell(row=row, column=1).alignment = dalign; ws.cell(row=row, column=1).border = bdata
         # B
         d = t['r']; dn = MAP.get(d, d)
         if d != repo: ws.cell(row=row, column=2, value=dn); repo = d
-        ws.cell(row=row, column=2).font = dfont; ws.cell(row=row, column=2).alignment = dalign; ws.cell(row=row, column=2).border = bnotop
+        ws.cell(row=row, column=2).font = dfont; ws.cell(row=row, column=2).alignment = dalign; ws.cell(row=row, column=2).border = bdata
         # C
         seq += 1; ws.cell(row=row, column=3, value=seq)
-        ws.cell(row=row, column=3).font = dfont; ws.cell(row=row, column=3).alignment = dalign; ws.cell(row=row, column=3).border = bnotop
+        ws.cell(row=row, column=3).font = dfont; ws.cell(row=row, column=3).alignment = dalign; ws.cell(row=row, column=3).border = bdata
         # D
         ws.cell(row=row, column=4, value=t['d'])
-        ws.cell(row=row, column=4).font = dfont; ws.cell(row=row, column=4).alignment = dalign; ws.cell(row=row, column=4).border = bnotop
+        ws.cell(row=row, column=4).font = dfont; ws.cell(row=row, column=4).alignment = dalign; ws.cell(row=row, column=4).border = bdata
         # E
         ws.cell(row=row, column=5, value=t['p'])
-        ws.cell(row=row, column=5).font = dfont; ws.cell(row=row, column=5).alignment = dalign; ws.cell(row=row, column=5).border = bnotop
+        ws.cell(row=row, column=5).font = dfont; ws.cell(row=row, column=5).alignment = dalign; ws.cell(row=row, column=5).border = bdata
         # F,J
         for c in (6, 10):
             ws.cell(row=row, column=c, value=TODAY).number_format = 'yyyy/m/d;@'
-            ws.cell(row=row, column=c).font = dfont; ws.cell(row=row, column=c).alignment = dalign; ws.cell(row=row, column=c).border = bnotop
+            ws.cell(row=row, column=c).font = dfont; ws.cell(row=row, column=c).alignment = dalign; ws.cell(row=row, column=c).border = bdata
         # G
         gr2 = gr + t['h']; gd2 = gd
         while gr2 > 8: gr2 -= 8; gd2 = nwd(gd2)
         ws.cell(row=row, column=7, value=gd2).number_format = 'yyyy/m/d;@'
-        ws.cell(row=row, column=7).font = dfont; ws.cell(row=row, column=7).alignment = dalign; ws.cell(row=row, column=7).border = bnotop
+        ws.cell(row=row, column=7).font = dfont; ws.cell(row=row, column=7).alignment = dalign; ws.cell(row=row, column=7).border = bdata
         gd = gd2; gr = gr2
         # H,K,N
         for c, hv in [(8, t['h']), (11, t['a']), (14, t['n'])]:
             ws.cell(row=row, column=c, value=hv)
-            ws.cell(row=row, column=c).font = dfont; ws.cell(row=row, column=c).alignment = dalign; ws.cell(row=row, column=c).border = bnotop
+            ws.cell(row=row, column=c).font = dfont; ws.cell(row=row, column=c).alignment = dalign; ws.cell(row=row, column=c).border = bdata
         # I,L,M 空列也加边框
         for c in (9, 12, 13):
-            ws.cell(row=row, column=c).border = bnotop
+            ws.cell(row=row, column=c).border = bdata
         print(f'Row{row}: {dn} #{seq}')
         row += 1
 
