@@ -393,9 +393,10 @@ def main():
             ws.insert_rows(notes_now)
         print(f"补空行: 数据行{insert_pos-1}与备注之间补 {need} 行，间距≥2")
 
-    # 9. 调整列宽、冻结表头，保存
-    ws.column_dimensions['D'].width = 60
-    ws.column_dimensions['N'].width = 60
+    # 9. 调整列宽（与原表一致）、冻结表头，保存
+    col_widths = {'A':13,'B':22.5,'C':14.8,'D':59.3,'E':16.4,'F':16.4,'G':15.9,'H':13.9,'I':24.3,'J':13,'K':14.8,'L':12,'M':41.8,'N':28.5}
+    for col_letter, width in col_widths.items():
+        ws.column_dimensions[col_letter].width = width
     ws.freeze_panes = 'A2'
     wb.save(XLSX_FILE)
     print(f"\n已保存: {XLSX_FILE}")
