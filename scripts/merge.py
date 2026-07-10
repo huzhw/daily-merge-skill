@@ -27,6 +27,7 @@ REPO_MAP = {
 REPORT_DIR = os.path.join(DESKTOP, f"报告-{YEAR}年", f"日报-{YEAR}-{MONTH}月")
 MD_FILE = os.path.join(REPORT_DIR, f"日报需求记录-{YEAR}-{MM}-{DD}.md")
 XLSX_FILE = os.path.join(REPORT_DIR, f"日报表格-胡志伟~~{MM}-{DD}.xlsx")
+TEMPLATE_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'templates', '日报模板.xlsx')
 
 # ===== 工具函数 =====
 def next_workday(date):
@@ -95,6 +96,9 @@ def find_base_excel():
         if os.path.exists(path):
             return path, False
         d -= timedelta(days=1)
+    # 月初没上个月文件，用空白模板
+    if os.path.exists(TEMPLATE_FILE):
+        return TEMPLATE_FILE, False
     return None, False
 
 def get_last_task_info(ws):
