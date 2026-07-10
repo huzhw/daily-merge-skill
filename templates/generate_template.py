@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """生成空白日报模板，用于每月初新表"""
 import openpyxl
-from openpyxl.styles import Alignment, Font, Border, Side
+from openpyxl.styles import Alignment, Font, Border, Side, PatternFill
 from openpyxl.utils import get_column_letter
 
 wb = openpyxl.Workbook()
@@ -17,12 +17,14 @@ headers = [
     '延期/调整原因', '备注/说明'
 ]
 
-header_font = Font(bold=True, size=10)
+header_font = Font(bold=True, size=10, color='FFFFFF')
+header_fill = PatternFill(start_color='4472C4', end_color='4472C4', fill_type='solid')
 header_align = Alignment(horizontal='center', vertical='center', wrap_text=True)
 
 for col, h in enumerate(headers, 1):
     cell = ws.cell(row=1, column=col, value=h)
     cell.font = header_font
+    cell.fill = header_fill
     cell.alignment = header_align
 
 ws.row_dimensions[1].height = 45
