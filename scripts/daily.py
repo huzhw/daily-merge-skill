@@ -245,7 +245,7 @@ def main():
         print(f"补空行 {need} 行")
 
     # 列宽
-    cw = {'A':13,'B':23,'C':15,'D':60,'E':16,'F':16,'G':16,'H':14,'I':24,'J':13,'K':15,'L':12,'M':42,'N':60}
+    cw = {'A':13,'B':23,'C':15,'D':60,'E':16,'F':18,'G':18,'H':14,'I':24,'J':13,'K':15,'L':14,'M':42,'N':60}
     for k, v in cw.items():
         ws.column_dimensions[k].width = v
     ws.freeze_panes = 'A2'
