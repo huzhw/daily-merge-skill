@@ -115,7 +115,7 @@ def main():
     if len(ts) > 1:
         ws.merge_cells(start_row=2, start_column=1, end_row=row - 1, end_column=1)
     # 列宽
-    cw = {'A': 13, 'B': 23, 'C': 15, 'D': 60, 'E': 16, 'F': 18, 'G': 18, 'H': 14, 'I': 24, 'J': 13, 'K': 15, 'L': 14, 'M': 42, 'N': 60}
+    cw = {'A': 13, 'B': 23, 'C': 15, 'D': 60, 'E': 16, 'F': 18, 'G': 18, 'H': 14, 'I': 27, 'J': 13, 'K': 15, 'L': 14, 'M': 42, 'N': 60}
     for k, v in cw.items(): ws.column_dimensions[k].width = v
     ws.freeze_panes = 'A2'
     wb.save(XL)
