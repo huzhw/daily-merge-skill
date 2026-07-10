@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-"""月初脚本：从模板创建当月首个日报，序号从 1 开始"""
+"""月初脚本：从模板复制，直接往空行写数据，不插行"""
 import openpyxl, os, shutil
-from datetime import datetime
+from datetime import datetime, timedelta
 from copy import copy
-from openpyxl.styles import Alignment
+from openpyxl.styles import Font, Alignment
 
 DESKTOP = r"C:\Users\Administrator\Desktop"
 TODAY = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
@@ -23,9 +23,8 @@ MD_FILE = os.path.join(REPORT_DIR, f"日报需求记录-{YEAR}-{MM}-{DD}.md")
 XLSX_FILE = os.path.join(REPORT_DIR, f"日报表格-胡志伟~~{MM}-{DD}.xlsx")
 
 def next_workday(d):
-    d = d + __import__('datetime').timedelta(days=1)
-    while d.weekday() >= 5:
-        d = d + __import__('datetime').timedelta(days=1)
+    d = d + timedelta(days=1)
+    while d.weekday() >= 5: d = d + timedelta(days=1)
     return d
 
 def parse_md(filepath):
@@ -47,25 +46,20 @@ def parse_md(filepath):
         is_done = status in ('已完成', '100%')
         if is_done and seq.isdigit():
             pct = status.replace('%', '') if '%' in status else '100'
-            tasks.append({'repo':repo,'desc':desc,'human_h':float(human_h),'ai_h':float(ai_h),'note':note,'pct':f'{pct}%'})
+            tasks.append({'repo':repo,'desc':desc,'human_h':float(human_h),'ai_h':float(ai_h),'note':note,'pct':pct+'%'})
     return tasks
 
 def calc_g(hours, prev_date, remaining):
     total = remaining + hours
     d = prev_date
-    while total > 8:
-        total -= 8
-        d = next_workday(d)
+    while total > 8: total -= 8; d = next_workday(d)
     return d, total
 
-def copy_style(src, dst):
-    """复制字号字体但不复制颜色（表头是白色）"""
-    if src.has_style:
-        from openpyxl.styles import Font
-        sf = src.font
-        dst.font = Font(name=sf.name, size=sf.size, bold=sf.bold, italic=sf.italic)
-        dst.border = copy(src.border)
-        dst.alignment = copy(src.alignment)
+def find_notes(ws):
+    for row in range(1, ws.max_row + 1):
+        if ws.cell(row=row, column=1).value and '填充说明' in str(ws.cell(row=row, column=1).value):
+            return row
+    return ws.max_row + 3
 
 def main():
     tasks = parse_md(MD_FILE)
@@ -74,69 +68,76 @@ def main():
         return
     print(f"找到 {len(tasks)} 条已完成任务")
 
-    # 从模板起新表
     os.makedirs(REPORT_DIR, exist_ok=True)
     shutil.copy(TEMPLATE, XLSX_FILE)
     wb = openpyxl.load_workbook(XLSX_FILE)
     ws = wb[wb.sheetnames[0]]
 
-    # 拆掉模板里残留的 A 列合并
-    for mr in list(ws.merged_cells.ranges):
-        if mr.min_col == 1:
-            try: ws.unmerge_cells(str(mr))
-            except: pass
-
-    # 从第 2 行开始写
+    notes_row = find_notes(ws)
+    # 第2行到备注前全是空行，直接写，不插行
     insert_pos = 2
     current_g = TODAY
     current_remaining = 0
     prev_repo = None
     seq = 0
 
+    data_font = Font(name='宋体', size=10)
+    wrap_align = Alignment(horizontal='left', vertical='top', wrap_text=True)
+
     for task in tasks:
-        ws.insert_rows(insert_pos)
-        ws.cell(row=insert_pos, column=1).value = TODAY
-        ws.cell(row=insert_pos, column=1).number_format = 'yyyy/m/d;@'
+        # 如果空行不够，在备注前补插
+        if insert_pos >= notes_row:
+            ws.insert_rows(notes_row)
+            notes_row += 1
+
+        r = insert_pos
+        ws.cell(row=r, column=1).value = TODAY
+        ws.cell(row=r, column=1).number_format = 'yyyy/m/d;@'
+        ws.cell(row=r, column=1).font = data_font
 
         repo = task['repo']
         display = REPO_MAP.get(repo, repo)
         if repo != prev_repo:
-            ws.cell(row=insert_pos, column=2).value = display
+            ws.cell(row=r, column=2).value = display
+            ws.cell(row=r, column=2).font = data_font
             prev_repo = repo
 
         seq += 1
-        ws.cell(row=insert_pos, column=3).value = seq
-        ws.cell(row=insert_pos, column=4).value = task['desc']
-        ws.cell(row=insert_pos, column=5).value = task['pct']
+        ws.cell(row=r, column=3).value = seq
+        ws.cell(row=r, column=3).font = data_font
+        ws.cell(row=r, column=4).value = task['desc']
+        ws.cell(row=r, column=4).font = data_font
+        ws.cell(row=r, column=4).alignment = wrap_align
+        ws.cell(row=r, column=5).value = task['pct']
+        ws.cell(row=r, column=5).font = data_font
 
         for c in (6, 10):
-            cell = ws.cell(row=insert_pos, column=c)
+            cell = ws.cell(row=r, column=c)
             cell.value = TODAY
             cell.number_format = 'yyyy/m/d;@'
+            cell.font = data_font
 
         current_g, current_remaining = calc_g(task['human_h'], current_g, current_remaining)
-        g_cell = ws.cell(row=insert_pos, column=7)
+        g_cell = ws.cell(row=r, column=7)
         g_cell.value = current_g
         g_cell.number_format = 'yyyy/m/d;@'
+        g_cell.font = data_font
 
-        ws.cell(row=insert_pos, column=8).value = task['human_h']
-        ws.cell(row=insert_pos, column=11).value = task['ai_h']
-        ws.cell(row=insert_pos, column=14).value = task['note']
+        ws.cell(row=r, column=8).value = task['human_h']
+        ws.cell(row=r, column=8).font = data_font
+        ws.cell(row=r, column=11).value = task['ai_h']
+        ws.cell(row=r, column=11).font = data_font
+        ws.cell(row=r, column=14).value = task['note']
+        ws.cell(row=r, column=14).font = data_font
+        ws.cell(row=r, column=14).alignment = wrap_align
 
-        # 样式参考第 1 行表头
-        for c in range(1, 15):
-            copy_style(ws.cell(row=1, column=c), ws.cell(row=insert_pos, column=c))
-        for c in (4, 14):
-            ws.cell(row=insert_pos, column=c).alignment = Alignment(horizontal='left', vertical='top', wrap_text=True)
-
-        # 行高
         lines = max(1, len(task['desc']) / 35)
-        ws.row_dimensions[insert_pos].height = max(30, lines * 15)
+        ws.row_dimensions[r].height = max(30, lines * 15)
 
-        print(f"  新增行 {insert_pos}: [{display}] #{seq} G={current_g.strftime('%m-%d')} H={task['human_h']}h K={task['ai_h']}h")
+        print(f"  新增行 {r}: [{display}] #{seq} G={current_g.strftime('%m-%d')} H={task['human_h']}h K={task['ai_h']}h")
         insert_pos += 1
 
-    # A 列合并
+    # A 列合并当天行
     if len(tasks) > 1:
         ws.merge_cells(start_row=2, start_column=1, end_row=insert_pos-1, end_column=1)
     for r in range(2, insert_pos):
@@ -144,10 +145,8 @@ def main():
 
     # 列宽
     cw = {'A':13,'B':23,'C':15,'D':60,'E':16,'F':16,'G':16,'H':14,'I':24,'J':13,'K':15,'L':12,'M':42,'N':60}
-    for k, v in cw.items():
-        ws.column_dimensions[k].width = v
+    for k, v in cw.items(): ws.column_dimensions[k].width = v
     ws.freeze_panes = 'A2'
-
     wb.save(XLSX_FILE)
     print(f"\n已保存: {XLSX_FILE}")
 
