@@ -311,8 +311,6 @@ def main():
             ws.insert_rows(notes_row)
         print(f"空行不足，在备注前补插 {need} 行")
 
-    insert_pos = last_data_row + 1
-
     for i, task in enumerate(tasks):
         ws.insert_rows(insert_pos)
 
