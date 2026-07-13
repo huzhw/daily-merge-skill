@@ -2,6 +2,14 @@
 
 日报流程第二步：读取 `daily-record` 生成的 md 需求记录，合并到当月 Excel 日报表。
 
+## 参见
+- [[daily-record]]：日报记录（第一步）
+- [[git-commit]]：Git 提交规范
+- [[coding-rules]]：AI 编码协作规范
+- [[reread-claude-md]]：重新加载 CLAUDE.md 规则
+
+---
+
 ## 解决了什么问题
 
 **md 写了需求，Excel 还要手动抄一遍。** 每天把 md 表格里的内容复制粘贴到 Excel，调格式、改序号、对齐日期——纯体力活。这个脚本一键完成：读 md → 追加到当月 Excel → 冻结表头 → 列宽自适应 → 日期格式匹配。
