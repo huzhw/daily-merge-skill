@@ -9,7 +9,7 @@ DESKTOP = r"C:\Users\Administrator\Desktop"
 TODAY = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
 YESTERDAY = TODAY - timedelta(days=1)
 YEAR = TODAY.strftime("%Y")
-MONTH = str(TODAY.month)
+MONTH = TODAY.strftime("%m")
 MM = TODAY.strftime("%m")
 DD = TODAY.strftime("%d")
 Y_MM = YESTERDAY.strftime("%m")
@@ -18,6 +18,7 @@ Y_DD = YESTERDAY.strftime("%d")
 REPO_MAP = {
     'lanxum-amisp': '档案V6', 'lanxum-amisp-java': '档案V6', 'lanxum-amisp-react': '档案V6',
     'workingpaper-v5.5': '中信底稿v5',
+    'standard_thdg_zxdm': '中信底稿V5',
 }
 
 REPORT_DIR = os.path.join(DESKTOP, f"报告-{YEAR}年", f"日报-{YEAR}-{MONTH}月")

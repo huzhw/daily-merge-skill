@@ -5,8 +5,8 @@ from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 
 DESKTOP = r"C:\Users\Administrator\Desktop"
 TODAY = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-Y = TODAY.strftime("%Y"); M = str(TODAY.month); MM = TODAY.strftime("%m"); DD = TODAY.strftime("%d")
-MAP = {'lanxum-amisp': '档案V6', 'lanxum-amisp-java': '档案V6', 'lanxum-amisp-react': '档案V6', 'workingpaper-v5.5': '中信底稿v5'}
+Y = TODAY.strftime("%Y"); M = TODAY.strftime("%m"); MM = TODAY.strftime("%m"); DD = TODAY.strftime("%d")
+MAP = {'lanxum-amisp': '档案V6', 'lanxum-amisp-java': '档案V6', 'lanxum-amisp-react': '档案V6', 'workingpaper-v5.5': '中信底稿v5', 'standard_thdg_zxdm': '中信底稿V5'}
 RD = os.path.join(DESKTOP, f"报告-{Y}年", f"日报-{Y}-{M}月")
 MD = os.path.join(RD, f"日报需求记录-{Y}-{MM}-{DD}.md")
 XL = os.path.join(RD, f"日报表格-胡志伟~~{MM}-{DD}.xlsx")
