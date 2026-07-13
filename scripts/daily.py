@@ -250,6 +250,7 @@ def main():
     for k, v in cw.items():
         ws.column_dimensions[k].width = v
     ws.freeze_panes = 'A2'
+    ws.sheet_view.topLeftCell = 'A1'
 
     wb.save(XLSX_FILE)
     print(f"\n已保存: {XLSX_FILE}")

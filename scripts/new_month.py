@@ -118,6 +118,7 @@ def main():
     cw = {'A': 13, 'B': 23, 'C': 15, 'D': 60, 'E': 16, 'F': 18, 'G': 18, 'H': 14, 'I': 32, 'J': 13, 'K': 15, 'L': 14, 'M': 25, 'N': 60}
     for k, v in cw.items(): ws.column_dimensions[k].width = v
     ws.freeze_panes = 'A2'
+    ws.sheet_view.topLeftCell = 'A1'
     wb.save(XL)
     print(f'Done: {XL}')
 
