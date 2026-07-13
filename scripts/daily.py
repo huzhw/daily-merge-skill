@@ -26,6 +26,16 @@ MD_FILE = os.path.join(REPORT_DIR, f"日报需求记录-{YEAR}-{MM}-{DD}.md")
 XLSX_FILE = os.path.join(REPORT_DIR, f"日报表格-胡志伟~~{MM}-{DD}.xlsx")
 YESTERDAY_XLSX = os.path.join(REPORT_DIR, f"日报表格-胡志伟~~{Y_MM}-{Y_DD}.xlsx")
 
+def clean_desc(text):
+    """清洗任务描述：换行、去格式标记"""
+    import re
+    text = re.sub(r'<br\s*/?>', '\n', text)   # <br> <br/> <br />
+    text = re.sub(r'\*\*(.+?)\*\*', r'\1', text)  # **bold** → bold
+    lines = [l.strip() for l in text.split('\n')]
+    lines = [l for l in lines if l]
+    return '\n'.join(lines)
+
+
 def next_workday(d):
     d = d + timedelta(days=1)
     while d.weekday() >= 5:
@@ -200,7 +210,7 @@ def main():
 
         max_seq += 1
         ws.cell(row=insert_pos, column=3).value = max_seq
-        ws.cell(row=insert_pos, column=4).value = task['desc']
+        ws.cell(row=insert_pos, column=4).value = clean_desc(task['desc'])
         ws.cell(row=insert_pos, column=5).value = task['pct']
 
         for c in (6, 10):

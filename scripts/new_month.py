@@ -11,6 +11,15 @@ RD = os.path.join(DESKTOP, f"报告-{Y}年", f"日报-{Y}-{M}月")
 MD = os.path.join(RD, f"日报需求记录-{Y}-{MM}-{DD}.md")
 XL = os.path.join(RD, f"日报表格-胡志伟~~{MM}-{DD}.xlsx")
 
+def clean_desc(text):
+    """清洗任务描述：换行、去格式标记"""
+    import re
+    text = re.sub(r'<br\s*/?>', '\n', text)
+    text = re.sub(r'\*\*(.+?)\*\*', r'\1', text)
+    lines = [l.strip() for l in text.split('\n')]
+    lines = [l for l in lines if l]
+    return '\n'.join(lines)
+
 def nwd(d):
     d += timedelta(days=1)
     while d.weekday() >= 5: d += timedelta(days=1)
@@ -86,7 +95,7 @@ def main():
         seq += 1; ws.cell(row=row, column=3, value=seq)
         ws.cell(row=row, column=3).font = dfont; ws.cell(row=row, column=3).alignment = dalign; ws.cell(row=row, column=3).border = bdata
         # D
-        ws.cell(row=row, column=4, value=t['d'])
+        ws.cell(row=row, column=4, value=clean_desc(t['d']))
         ws.cell(row=row, column=4).font = dfont; ws.cell(row=row, column=4).alignment = dalign; ws.cell(row=row, column=4).border = bdata
         # E
         ws.cell(row=row, column=5, value=t['p'])
