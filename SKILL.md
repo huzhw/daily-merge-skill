@@ -111,7 +111,7 @@ python "{技能目录}/scripts/daily.py"
 
 > md 记账，Excel 交差——一个脚本每天跑，序号自动编，日期自动叠。
 
-## 参见
+## 相关技能
 - [[daily-record]]：日报记录
 - [[git-commit]]：Git 提交流程
 - [[coding-rules]]：AI 编码协作规范

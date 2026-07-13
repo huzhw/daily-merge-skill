@@ -2,7 +2,7 @@
 
 日报流程第二步：读取 `daily-record` 生成的 md 需求记录，合并到当月 Excel 日报表。
 
-## 参见
+## 相关技能
 - [daily-record](https://github.com/huzhw/daily-record-skill)：日报记录（第一步）
 - [git-commit](https://github.com/huzhw/git-commit-skill)：Git 提交规范
 - [coding-rules](https://github.com/huzhw/coding-rules)：AI 编码协作规范
@@ -78,11 +78,6 @@ git clone https://github.com/huzhw/daily-merge-skill.git ~/.claude/skills/daily-
 ```
 
 安装后在 AI 编码助手里说「合并日报」触发。
-
-## 相关项目
-
-- [daily-record](https://github.com/huzhw/daily-record-skill) — 日报第一步：需求记录 + 工时评估
-- [git-commit-skill](https://github.com/huzhw/git-commit-skill) — Git 提交规范，同系列
 
 ## 许可
 
