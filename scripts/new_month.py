@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""月初脚本：从模板起新表，写入当天已完成需求（按仓库分组合并）"""
 import openpyxl, os
 from datetime import datetime, timedelta
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
@@ -6,47 +7,92 @@ from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 DESKTOP = r"C:\Users\Administrator\Desktop"
 TODAY = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
 Y = TODAY.strftime("%Y"); M = TODAY.strftime("%m"); MM = TODAY.strftime("%m"); DD = TODAY.strftime("%d")
-MAP = {'lanxum-amisp': '档案V6', 'lanxum-amisp-java': '档案V6', 'lanxum-amisp-react': '档案V6', 'workingpaper-v5.5': '中信底稿v5', 'standard_thdg_zxdm': '中信底稿V5'}
+
+REPO_MAP = {
+    'lanxum-amisp': '档案V6', 'lanxum-amisp-java': '档案V6', 'lanxum-amisp-react': '档案V6',
+    'workingpaper-v5.5': '中信底稿V5',
+    'standard_thdg_zxdm': '中信底稿V5',
+    # md 直接用中文名的情况
+    '中信底稿V5': '中信底稿V5',
+    '档案V6': '档案V6',
+    '档案系统V6': '档案V6',
+    '智能数据底座': '智能数据底座',
+}
+
 RD = os.path.join(DESKTOP, f"报告-{Y}年", f"日报-{Y}-{M}月")
 MD = os.path.join(RD, f"日报需求记录-{Y}-{MM}-{DD}.md")
 XL = os.path.join(RD, f"日报表格-胡志伟~~{MM}-{DD}.xlsx")
 
-def clean_desc(text):
-    """清洗任务描述：换行、去格式标记"""
-    import re
-    text = re.sub(r'<br\s*/?>', '\n', text)
-    text = re.sub(r'\*\*(.+?)\*\*', r'\1', text)
-    lines = [l.strip() for l in text.split('\n')]
-    lines = [l for l in lines if l]
-    return '\n'.join(lines)
 
 def nwd(d):
     d += timedelta(days=1)
-    while d.weekday() >= 5: d += timedelta(days=1)
+    while d.weekday() >= 5:
+        d += timedelta(days=1)
     return d
 
+
 def parse():
-    ts = []
-    with open(MD, encoding='utf-8') as f: c = f.read()
+    """解析 md，按仓库分组合并已完成任务"""
+    ts_by_repo = {}
+    repo_order = []
+    with open(MD, encoding='utf-8') as f:
+        c = f.read()
     for l in c.split('\n'):
         l = l.strip()
-        if not l.startswith('|') or '---' in l or '序号' in l or '空行' in l: continue
+        if not l.startswith('|') or '---' in l or '序号' in l or '空行' in l:
+            continue
         p = [x.strip() for x in l.split('|')[1:-1]]
-        if len(p) < 8: continue
-        if p[5] in ('已完成', '100%') and p[0].isdigit():
-            ts.append({'r': p[2], 'd': p[3], 'h': float(p[6]), 'a': float(p[7]), 'n': p[8], 'p': p[5].replace('%', '') + '%'})
-    return ts
+        if len(p) < 9:
+            continue
+        seq, date, repo, desc, modules, status, human_h, ai_h, note = p[:9]
+        if status not in ('已完成', '100%') or not seq.isdigit():
+            continue
+
+        display = REPO_MAP.get(repo, repo)
+        if display not in ts_by_repo:
+            ts_by_repo[display] = []
+            repo_order.append(display)
+        ts_by_repo[display].append({
+            'desc': desc,
+            'modules': modules,
+            'note': note,
+            'human_h': float(human_h),
+            'ai_h': float(ai_h),
+        })
+
+    result = []
+    for repo in repo_order:
+        tasks = ts_by_repo[repo]
+        desc_parts = []
+        for i, t in enumerate(tasks, 1):
+            part = f"{i}、{t['desc']}"
+            if t['modules'] and t['modules'] != '—':
+                part += f"\n{t['modules']}"
+            if t['note'] and t['note'] != '—':
+                part += f"\n{t['note']}"
+            desc_parts.append(part)
+
+        result.append({
+            'repo': repo,
+            'desc': '\n\n'.join(desc_parts),
+            'human_h': sum(t['human_h'] for t in tasks),
+        })
+
+    return result
+
 
 def main():
     ts = parse()
-    if not ts: print('无任务'); return
+    if not ts:
+        print('无任务')
+        return
     os.makedirs(RD, exist_ok=True)
 
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = '日报'
 
-    # 样式（完全参照原文件）
+    # 样式
     hfont = Font(name='Microsoft YaHei', size=11, bold=True, color='FFFFFF')
     hfill = PatternFill(start_color='1450B8', end_color='1450B8', fill_type='solid')
     halign = Alignment(horizontal='center', vertical='center', wrap_text=True)
@@ -82,53 +128,78 @@ def main():
         ws.cell(row=nr + i, column=col, value=txt)
 
     # 写数据
-    row = 2; gd = TODAY; gr = 0; repo = None; seq = 0
+    row = 2
+    gd = TODAY
+    gr = 0
+    repo_prev = None
+    seq = 0
+
     for t in ts:
-        # A
+        # A 列：当天日期
         ws.cell(row=row, column=1, value=TODAY).number_format = 'yyyy/m/d;@'
         ws.cell(row=row, column=1).font = dfont; ws.cell(row=row, column=1).alignment = dalign; ws.cell(row=row, column=1).border = bdata
-        # B
-        d = t['r']; dn = MAP.get(d, d)
-        if d != repo: ws.cell(row=row, column=2, value=dn); repo = d
+
+        # B 列：项目名（同项目省略）
+        if t['repo'] != repo_prev:
+            ws.cell(row=row, column=2, value=t['repo'])
+            repo_prev = t['repo']
         ws.cell(row=row, column=2).font = dfont; ws.cell(row=row, column=2).alignment = dalign; ws.cell(row=row, column=2).border = bdata
-        # C
-        seq += 1; ws.cell(row=row, column=3, value=seq)
+
+        # C 列：序号
+        seq += 1
+        ws.cell(row=row, column=3, value=seq)
         ws.cell(row=row, column=3).font = dfont; ws.cell(row=row, column=3).alignment = dalign; ws.cell(row=row, column=3).border = bdata
-        # D
-        ws.cell(row=row, column=4, value=clean_desc(t['d']))
-        ws.cell(row=row, column=4).font = dfont; ws.cell(row=row, column=4).alignment = dalign; ws.cell(row=row, column=4).border = bdata
-        # E
-        ws.cell(row=row, column=5, value=t['p'])
+
+        # D 列：合并后的描述，行高固定 35
+        ws.cell(row=row, column=4, value=t['desc'])
+        ws.cell(row=row, column=4).font = dfont
+        ws.cell(row=row, column=4).alignment = Alignment(horizontal='left', vertical='top', wrap_text=True)
+        ws.cell(row=row, column=4).border = bdata
+        ws.row_dimensions[row].height = 35
+
+        # E 列：固定 0%
+        ws.cell(row=row, column=5, value='0%')
         ws.cell(row=row, column=5).font = dfont; ws.cell(row=row, column=5).alignment = dalign; ws.cell(row=row, column=5).border = bdata
-        # F,J
-        for c in (6, 10):
-            ws.cell(row=row, column=c, value=TODAY).number_format = 'yyyy/m/d;@'
-            ws.cell(row=row, column=c).font = dfont; ws.cell(row=row, column=c).alignment = dalign; ws.cell(row=row, column=c).border = bdata
-        # G
-        gr2 = gr + t['h']; gd2 = gd
-        while gr2 > 8: gr2 -= 8; gd2 = nwd(gd2)
+
+        # F 列：任务创建时间 = 当天
+        ws.cell(row=row, column=6, value=TODAY).number_format = 'yyyy/m/d;@'
+        ws.cell(row=row, column=6).font = dfont; ws.cell(row=row, column=6).alignment = dalign; ws.cell(row=row, column=6).border = bdata
+
+        # G 列：按总工时叠加计算
+        gr2 = gr + t['human_h']
+        gd2 = gd
+        while gr2 > 8:
+            gr2 -= 8
+            gd2 = nwd(gd2)
         ws.cell(row=row, column=7, value=gd2).number_format = 'yyyy/m/d;@'
         ws.cell(row=row, column=7).font = dfont; ws.cell(row=row, column=7).alignment = dalign; ws.cell(row=row, column=7).border = bdata
         gd = gd2; gr = gr2
-        # H,K,N
-        for c, hv in [(8, t['h']), (11, t['a']), (14, t['n'])]:
-            ws.cell(row=row, column=c, value=hv)
-            ws.cell(row=row, column=c).font = dfont; ws.cell(row=row, column=c).alignment = dalign; ws.cell(row=row, column=c).border = bdata
-        # I,L,M 空列也加边框
-        for c in (9, 12, 13):
+
+        # H 列：总工时
+        ws.cell(row=row, column=8, value=t['human_h'])
+        ws.cell(row=row, column=8).font = dfont; ws.cell(row=row, column=8).alignment = dalign; ws.cell(row=row, column=8).border = bdata
+
+        # I/J/K 列：留空，只加边框
+        for c in (9, 10, 11, 12, 13, 14):
             ws.cell(row=row, column=c).border = bdata
-        print(f'Row{row}: {dn} #{seq}')
+
+        print(f'Row{row}: {t["repo"]} #{seq} G={gd2.strftime("%m-%d")} H={t["human_h"]}h')
         row += 1
 
     # A 列合并
     if len(ts) > 1:
         ws.merge_cells(start_row=2, start_column=1, end_row=row - 1, end_column=1)
+
     # 列宽
-    cw = {'A': 13, 'B': 23, 'C': 15, 'D': 60, 'E': 16, 'F': 18, 'G': 18, 'H': 14, 'I': 32, 'J': 13, 'K': 15, 'L': 14, 'M': 25, 'N': 60}
-    for k, v in cw.items(): ws.column_dimensions[k].width = v
+    cw = {'A': 13, 'B': 23, 'C': 15, 'D': 60, 'E': 16, 'F': 18, 'G': 18, 'H': 14,
+          'I': 32, 'J': 13, 'K': 15, 'L': 14, 'M': 25, 'N': 60}
+    for k, v in cw.items():
+        ws.column_dimensions[k].width = v
     ws.freeze_panes = 'A2'
     ws.sheet_view.topLeftCell = 'A1'
     wb.save(XL)
     print(f'Done: {XL}')
 
-if __name__ == '__main__': main()
+
+if __name__ == '__main__':
+    main()
