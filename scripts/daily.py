@@ -255,9 +255,12 @@ def find_previous_workday_rows(ws, notes_row):
     last_block = date_blocks[-1]
     prev_date, block_start, block_end = last_block
 
-    # 扫描该日期块内 E < 1 的行
+    # 扫描该日期块内 E < 1 的行（必须有序号才算数据行，跳过空行）
     unfinished = []
     for row in range(block_start, block_end + 1):
+        cv = ws.cell(row=row, column=3).value
+        if cv is None or not str(cv).strip().isdigit():
+            continue  # 跳过空行、无序号行
         e_val = ws.cell(row=row, column=5).value
         pct = parse_pct(e_val)
         if pct < 1:
