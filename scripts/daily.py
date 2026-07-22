@@ -216,15 +216,6 @@ def copy_style(src, dst):
         dst.alignment = copy(src.alignment)
 
 
-def copy_cell_style(src_cell, dst_cell):
-    """完整复制单元格样式（含数字格式）"""
-    if src_cell.has_style:
-        dst_cell.font = copy(src_cell.font)
-        dst_cell.border = copy(src_cell.border)
-        dst_cell.fill = copy(src_cell.fill)
-        dst_cell.number_format = src_cell.number_format
-        dst_cell.protection = copy(src_cell.protection)
-        dst_cell.alignment = copy(src_cell.alignment)
 
 
 def find_previous_workday_rows(ws, notes_row):
@@ -337,8 +328,6 @@ def main():
             row_data[col] = {
                 'value': src_cell.value,
                 'number_format': src_cell.number_format,
-                'font': copy(src_cell.font) if src_cell.font else None,
-                'alignment': copy(src_cell.alignment) if src_cell.alignment else None,
             }
         unfinished_data.append(row_data)
 
@@ -368,21 +357,24 @@ def main():
 
         for col, data in row_data.items():
             dst_cell = ws.cell(row=insert_pos, column=col)
-            dst_cell.value = data['value']
+            # E 列统一写 0%，其余列保留原值
+            if col == 5:
+                dst_cell.value = '0%'
+            else:
+                dst_cell.value = data['value']
             dst_cell.number_format = data['number_format']
-            if data['font']:
-                dst_cell.font = data['font']
-            if data['alignment']:
-                dst_cell.alignment = data['alignment']
 
         ws.row_dimensions[insert_pos].height = 35
 
-        # 未复制列：从表头复制基本样式
+        # 所有列统一从表头复制基本样式（字体/边框/对齐，不含颜色）
         for col in range(1, 15):
-            if col not in COPY_COLS and col != 1:
-                copy_style(ws.cell(row=1, column=col), ws.cell(row=insert_pos, column=col))
+            copy_style(ws.cell(row=1, column=col), ws.cell(row=insert_pos, column=col))
+        # D/M/N 列左对齐
+        ws.cell(row=insert_pos, column=4).alignment = Alignment(horizontal='left', vertical='top', wrap_text=True)
+        for col in (13, 14):
+            ws.cell(row=insert_pos, column=col).alignment = Alignment(horizontal='left', vertical='center', wrap_text=True)
 
-        print(f"  复制未完成行 → {insert_pos}: C={ws.cell(row=insert_pos, column=3).value} E={ws.cell(row=insert_pos, column=5).value}")
+        print(f"  复制未完成行 → {insert_pos}: C={ws.cell(row=insert_pos, column=3).value} E=0%")
         insert_pos += 1
 
     # ── 7. 追加 md 新任务（按仓库合并） ──
@@ -434,7 +426,10 @@ def main():
 
             for c in range(1, 15):
                 copy_style(ws.cell(row=1, column=c), ws.cell(row=insert_pos, column=c))
+            # D/M/N 列左对齐
             ws.cell(row=insert_pos, column=4).alignment = Alignment(horizontal='left', vertical='top', wrap_text=True)
+            for col in (13, 14):
+                ws.cell(row=insert_pos, column=col).alignment = Alignment(horizontal='left', vertical='center', wrap_text=True)
             ws.row_dimensions[insert_pos].height = 35
 
             print(f"  新增行 {insert_pos}: [{repo}] #{max_seq} G={current_g.strftime('%m-%d')} H={task['human_h']}h")
